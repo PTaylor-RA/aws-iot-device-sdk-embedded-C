@@ -38,15 +38,15 @@ static int _iot_tls_verify_cert(void *data, mbedtls_x509_crt *crt, int depth, ui
 	char buf[1024];
 	((void) data);
 
-	IOT_DEBUG("\nVerify requested for (Depth %d):\n", depth);
-	mbedtls_x509_crt_info(buf, sizeof(buf) - 1, "", crt);
-	IOT_DEBUG("%s", buf);
+	IOT_DEBUG("Verify requested for (Depth %d):\n", depth);
+	mbedtls_x509_crt_info(buf, sizeof(buf) - 1, "   ", crt);
+	IOT_DEBUG("\n%s", buf);
 
 	if((*flags) == 0) {
 		IOT_DEBUG("  This certificate has no flags\n");
 	} else {
-		IOT_DEBUG(buf, sizeof(buf), "  ! ", *flags);
-		IOT_DEBUG("%s\n", buf);
+		IOT_DEBUG("  ! 0x%08X", *flags);
+//		IOT_DEBUG("%s\n", buf);
 	}
 
 	return 0;
@@ -251,7 +251,7 @@ IoT_Error_t iot_tls_connect(Network *pNetwork, TLSConnectParams *params) {
 #ifdef IOT_DEBUG
 	if (mbedtls_ssl_get_peer_cert(&(tlsDataParams->ssl)) != NULL) {
 		IOT_DEBUG("  . Peer certificate information    ...\n");
-		mbedtls_x509_crt_info((char *) buf, sizeof(buf) - 1, "      ", mbedtls_ssl_get_peer_cert(&(tlsDataParams->ssl)));
+		mbedtls_x509_crt_info((char *) buf, sizeof(buf) - 1, "   ", mbedtls_ssl_get_peer_cert(&(tlsDataParams->ssl)));
 		IOT_DEBUG("%s\n", buf);
 	}
 #endif
@@ -267,7 +267,7 @@ IoT_Error_t iot_tls_write(Network *pNetwork, unsigned char *pMsg, size_t len, Ti
 	int frags, ret;
 	TLSDataParams *tlsDataParams = &(pNetwork->tlsDataParams);
 
-	for(written_so_far = 0, frags = 0;
+	for(written_so_far = 0, frags = 0, ret = 0;
 		written_so_far < len && !has_timer_expired(timer); written_so_far += ret, frags++) {
 		while(!has_timer_expired(timer) &&
 			  (ret = mbedtls_ssl_write(&(tlsDataParams->ssl), pMsg + written_so_far, len - written_so_far)) <= 0) {
